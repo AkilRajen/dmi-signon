@@ -7,7 +7,8 @@ const CONFIG = {
         clientId: '26uhgsh1bjf8bvjo2r5nuvksu1',
         domain: 'us-east-1k90mwxxsl.auth.us-east-1.amazoncognito.com',
         // Use exact URL that matches your Cognito App Client configuration
-        redirectUri: 'http://localhost/dmi-signon/index.html',
+        // Automatically detect environment
+        redirectUri: window.location.origin + window.location.pathname,
         responseType: 'code',
         scope: 'openid email profile'
     },
