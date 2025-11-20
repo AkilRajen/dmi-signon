@@ -19,23 +19,8 @@ const AZURE_CLIENT_SECRET = process.env.AZURE_CLIENT_SECRET;
 const AZURE_SCOPE = process.env.AZURE_SCOPE || `https://${CRM_BASE_URL}/.default`;
 
 export const handler = async (event) => {
+    console.log('=== LAMBDA INVOKED ===');
     console.log('Event:', JSON.stringify(event, null, 2));
-    
-    // Validate required environment variables
-    if (!AZURE_TENANT_ID || !AZURE_CLIENT_ID || !AZURE_CLIENT_SECRET) {
-        console.error('Missing required environment variables');
-        return {
-            statusCode: 500,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                success: false,
-                error: 'Lambda configuration error: Missing Azure AD credentials'
-            })
-        };
-    }
     
     // CORS headers - must be present in all responses
     const headers = {
@@ -46,14 +31,30 @@ export const handler = async (event) => {
         'Content-Type': 'application/json'
     };
     
-    // Handle preflight OPTIONS request (supports both REST API and HTTP API formats)
-    const httpMethod = event.httpMethod || event.requestContext?.http?.method;
+    // Detect HTTP method (supports both REST API and HTTP API formats)
+    const httpMethod = event.httpMethod || event.requestContext?.http?.method || event.requestContext?.httpMethod;
+    console.log('HTTP Method detected:', httpMethod);
+    
+    // Handle preflight OPTIONS request
     if (httpMethod === 'OPTIONS') {
-        console.log('Handling OPTIONS preflight request');
+        console.log('✓ Handling OPTIONS preflight request');
         return {
             statusCode: 200,
             headers: headers,
-            body: ''
+            body: JSON.stringify({ message: 'CORS preflight successful' })
+        };
+    }
+    
+    // Validate required environment variables for POST requests
+    if (!AZURE_TENANT_ID || !AZURE_CLIENT_ID || !AZURE_CLIENT_SECRET) {
+        console.error('Missing required environment variables');
+        return {
+            statusCode: 500,
+            headers: headers,
+            body: JSON.stringify({
+                success: false,
+                error: 'Lambda configuration error: Missing Azure AD credentials'
+            })
         };
     }
     
