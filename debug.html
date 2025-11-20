@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Cognito Configuration</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .debug-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h3 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        pre {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .url-box {
+            word-break: break-all;
+            background: #e8f4f8;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #3498db;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .error {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        .success {
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cognito Configuration Debug</h1>
+    
+    <div class="debug-box">
+        <h3>Current Configuration</h3>
+        <pre id="config-display"></pre>
+    </div>
+
+    <div class="debug-box">
+        <h3>Generated URLs</h3>
+        <div id="urls"></div>
+    </div>
+
+    <div class="debug-box">
+        <h3>Required Cognito Settings</h3>
+        <ol>
+            <li><strong>Domain:</strong> Must be configured in Cognito User Pool → App integration → Domain</li>
+            <li><strong>App Client:</strong> Must have Hosted UI enabled</li>
+            <li><strong>Callback URLs:</strong> Must include <code id="callback-url"></code></li>
+            <li><strong>Identity Providers:</strong> Must have at least one social provider enabled (Google, Facebook, Apple, Microsoft)</li>
+            <li><strong>OAuth Flows:</strong> Must have "Authorization code grant" enabled</li>
+            <li><strong>OAuth Scopes:</strong> Must have "openid", "email", "profile" enabled</li>
+        </ol>
+    </div>
+
+    <div class="debug-box">
+        <h3>Test Login</h3>
+        <button onclick="testGoogle()">Test Google Login</button>
+        <button onclick="testFacebook()">Test Facebook Login</button>
+        <button onclick="testApple()">Test Apple Login</button>
+        <button onclick="testMicrosoft()">Test Microsoft Login</button>
+        <button onclick="testHostedUI()">Test Hosted UI (All Providers)</button>
+    </div>
+
+    <div class="debug-box">
+        <h3>Test API</h3>
+        <button onclick="testAPI()">Test API Endpoint</button>
+        <button onclick="testCORS()">Test CORS (OPTIONS)</button>
+        <div id="api-result" style="margin-top: 10px;"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Display config
+        document.getElementById('config-display').innerHTML = `
+            <pre>${JSON.stringify(CONFIG, null, 2)}</pre>
+        `;
+
+        // Build URLs
+        function buildLoginUrl(provider) {
+            const params = new URLSearchParams({
+                client_id: CONFIG.cognito.clientId,
+                response_type: CONFIG.cognito.responseType,
+                scope: CONFIG.cognito.scope,
+                redirect_uri: CONFIG.cognito.redirectUri
+            });
+            
+            if (provider) {
+                params.append('identity_provider', provider);
+            }
+            
+            return `https://${CONFIG.cognito.domain}/oauth2/authorize?${params.toString()}`;
+        }
+
+        // Display URLs
+        const hostedUIUrl = buildLoginUrl();
+        const googleUrl = buildLoginUrl('Google');
+        
+        document.getElementById('urls').innerHTML = `
+            <p><strong>Hosted UI URL:</strong></p>
+            <pre>${hostedUIUrl}</pre>
+            <p><strong>Google Direct URL:</strong></p>
+            <pre>${googleUrl}</pre>
+        `;
+
+        document.getElementById('callback-url').textContent = CONFIG.cognito.redirectUri;
+
+        // Test functions
+        function testGoogle() {
+            window.location.href = buildLoginUrl('Google');
+        }
+
+        function testFacebook() {
+            window.location.href = buildLoginUrl('Facebook');
+        }
+
+        function testApple() {
+            window.location.href = buildLoginUrl('SignInWithApple');
+        }
+
+        function testMicrosoft() {
+            window.location.href = buildLoginUrl('Microsoft');
+        }
+
+        function testHostedUI() {
+            window.location.href = buildLoginUrl();
+        }
+
+        // Test API endpoint
+        function testAPI() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing API...</p>';
+            
+            fetch(CONFIG.api.submitLead, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer test-token'
+                },
+                body: JSON.stringify({
+                    LeadFirstName: 'Test',
+                    LeadLastName: 'User',
+                    LeadEmail: 'test@example.com',
+                    LeadMobile: '+971501234567',
+                    LeadPublicationName: 'Test Publication',
+                    LeadDescription: 'Test description',
+                    LeadCountry: 'United Arab Emirates',
+                    LeadAddress: 'Test Address'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                resultDiv.innerHTML = `<pre class="success">✓ API Test Success:\n${JSON.stringify(data, null, 2)}</pre>`;
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<pre class="error">✗ API Test Failed:\n${error.message}</pre>`;
+            });
+        }
+
+        // Test CORS
+        function testCORS() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing CORS...</p>';
+            
+            fetch(CONFIG.api.submitLead, {
+                method: 'OPTIONS',
+                headers: {
+                    'Origin': window.location.origin,
+                    'Access-Control-Request-Method': 'POST',
+                    'Access-Control-Request-Headers': 'content-type,authorization'
+                }
+            })
+            .then(response => {
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+                resultDiv.innerHTML = `<pre class="success">✓ CORS Test Success (Status: ${response.status}):\n${JSON.stringify(headers, null, 2)}</pre>`;
+            })
+            .catch(error => {
+                resultDiv.innerHTML = `<pre class="error">✗ CORS Test Failed:\n${error.message}\n\nThis means CORS is not properly configured in API Gateway.</pre>`;
+            });
+        }
+
+        // Check domain
+        console.log('Checking Cognito domain...');
+        fetch(`https://${CONFIG.cognito.domain}/.well-known/openid-configuration`)
+            .then(response => {
+                if (response.ok) {
+                    console.log('✓ Cognito domain is accessible');
+                    return response.json();
+                } else {
+                    console.error('✗ Cognito domain not accessible');
+                }
+            })
+            .then(data => {
+                console.log('OpenID Configuration:', data);
+            })
+            .catch(error => {
+                console.error('✗ Error checking Cognito domain:', error);
+            });
+    </script>
+</body>
+</html>
