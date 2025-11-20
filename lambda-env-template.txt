@@ -1,0 +1,21 @@
+# Lambda Environment Variables Template
+# Copy these to your Lambda function's environment variables
+
+# Required - Azure AD OAuth Configuration
+AZURE_TENANT_ID=your-tenant-id-here
+AZURE_CLIENT_ID=your-client-id-here
+AZURE_CLIENT_SECRET=your-client-secret-here
+
+# Optional - CRM Configuration (uses defaults if not set)
+CRM_BASE_URL=dmi-uat.crm15.dynamics.com
+CREATE_LEAD_ENDPOINT=/api/data/v9.2/titc_CreateClassifiedB2BLead
+AZURE_SCOPE=https://dmi-uat.crm15.dynamics.com/.default
+
+# How to add these to Lambda:
+# 1. Go to AWS Lambda Console
+# 2. Select your function: dmi-signon-submit-lead
+# 3. Click "Configuration" tab
+# 4. Click "Environment variables" in left menu
+# 5. Click "Edit"
+# 6. Add each variable above
+# 7. Click "Save"

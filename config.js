@@ -26,7 +26,6 @@ const CONFIG = {
     },
     api: {
         // AWS Lambda API Gateway endpoint
-        // Replace with your actual API Gateway URL after deployment
-        submitLead: 'https://1lwvjovcaj.execute-api.us-east-1.amazonaws.com'
+        submitLead: 'https://1lwvjovcaj.execute-api.us-east-1.amazonaws.com/submit-lead'
     }
 };

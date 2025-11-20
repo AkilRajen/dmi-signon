@@ -1,3 +1,18 @@
+// Form fields configuration (using CRM field names)
+const FORM_FIELDS = [
+    { name: 'LeadFirstName', label: 'First Name', type: 'text', required: true, maxLength: 100 },
+    { name: 'LeadLastName', label: 'Last Name', type: 'text', required: true, maxLength: 100 },
+    { name: 'LeadEmail', label: 'Email', type: 'email', required: true },
+    { name: 'LeadMobile', label: 'Phone Number', type: 'tel', required: true },
+    { name: 'LeadPublicationName', label: 'Publication', type: 'text', required: true, maxLength: 200 },
+    { name: 'LeadDescription', label: 'Description', type: 'textarea', required: true, maxLength: 1000 },
+    { name: 'LeadCountry', label: 'Country', type: 'select', required: false, default: 'United Arab Emirates',
+      options: ['United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 
+               'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
+               'India', 'China', 'Japan', 'Brazil', 'Mexico', 'South Africa', 'Other'] },
+    { name: 'LeadAddress', label: 'Address', type: 'textarea', required: false, maxLength: 500 }
+];
+
 // Main application logic
 $(document).ready(function() {
     // Initialize auth plugin
@@ -69,20 +84,6 @@ $(document).ready(function() {
         loadFormFields();
     }
     
-    // Form fields configuration (using CRM field names)
-    const FORM_FIELDS = [
-        { name: 'LeadFirstName', label: 'First Name', type: 'text', required: true, maxLength: 100 },
-        { name: 'LeadLastName', label: 'Last Name', type: 'text', required: true, maxLength: 100 },
-        { name: 'LeadEmail', label: 'Email', type: 'email', required: true },
-        { name: 'LeadMobile', label: 'Phone Number', type: 'tel', required: true },
-        { name: 'LeadPublicationName', label: 'Publication', type: 'text', required: true, maxLength: 200 },
-        { name: 'LeadDescription', label: 'Description', type: 'textarea', required: true, maxLength: 1000 },
-        { name: 'LeadCountry', label: 'Country', type: 'select', required: false, default: 'United Arab Emirates',
-          options: ['United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 
-                   'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
-                   'India', 'China', 'Japan', 'Brazil', 'Mexico', 'South Africa', 'Other'] },
-        { name: 'LeadAddress', label: 'Address', type: 'textarea', required: false, maxLength: 500 }
-    ];
     
     // Load form fields
     function loadFormFields() {
@@ -168,22 +169,23 @@ $(document).ready(function() {
             formData[field.name] = field.value;
         });
         
-        // Add user info
-        const user = authPlugin.getCurrentUser();
-        formData.userId = user.sub;
-        formData.userEmail = user.email;
+        // Note: userId and userEmail are not sent to CRM as they're not valid parameters
+        // The CRM only accepts the Lead* fields defined in FORM_FIELDS
         
         submitFormToCRM(formData);
     });
     
     // Submit form to CRM via Lambda
     function submitFormToCRM(formData) {
-        console.log('Submitting form to CRM via Lambda...', formData);
+        console.log('=== FORM SUBMISSION DEBUG ===');
+        console.log('API URL:', CONFIG.api.submitLead);
+        console.log('Form Data:', formData);
         
         // Show loading state
         $('#ad-form button[type="submit"]').prop('disabled', true).text('Submitting...');
         
         const idToken = authPlugin.getIdToken();
+        console.log('ID Token:', idToken ? 'Present' : 'Missing');
         
         $.ajax({
             url: CONFIG.api.submitLead,
@@ -194,23 +196,28 @@ $(document).ready(function() {
             },
             data: JSON.stringify(formData),
             success: function(response) {
-                console.log('Lead submitted successfully:', response);
+                console.log('✓ Lead submitted successfully:', response);
                 $('#form-section').hide();
                 $('#success-section').show();
             },
             error: function(xhr, status, error) {
-                console.error('Failed to submit lead:', error);
-                console.error('Status:', xhr.status);
-                console.error('Response:', xhr.responseText);
+                console.error('=== SUBMISSION ERROR ===');
+                console.error('Status Code:', xhr.status);
+                console.error('Status Text:', status);
+                console.error('Error:', error);
+                console.error('Response Text:', xhr.responseText);
+                console.error('Response Headers:', xhr.getAllResponseHeaders());
                 
                 $('#ad-form button[type="submit"]').prop('disabled', false).text('Submit');
                 
-                let errorMessage = 'Failed to submit form. Please try again.';
+                let errorMessage = 'Failed to submit form. Please check console for details.\n\n';
+                errorMessage += 'Status: ' + xhr.status + '\n';
+                
                 try {
                     const errorData = JSON.parse(xhr.responseText);
-                    errorMessage += '\n\nError: ' + (errorData.error || errorData.message || xhr.responseText);
+                    errorMessage += 'Error: ' + (errorData.error || errorData.message || JSON.stringify(errorData));
                 } catch (e) {
-                    errorMessage += '\n\nError: ' + (xhr.responseText || error);
+                    errorMessage += 'Response: ' + (xhr.responseText || error);
                 }
                 
                 alert(errorMessage);

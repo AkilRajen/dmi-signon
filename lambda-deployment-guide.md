@@ -14,17 +14,46 @@
 
 ## Step 2: Upload Lambda Code
 
-1. **Copy the code from `lambda-submit-lead.js`**
-2. **In Lambda console, paste it into the code editor**
-3. **Click "Deploy"**
+Since your Lambda uses `.mjs` extension (ES Modules):
 
-## Step 3: Configure Lambda
+1. **Copy the code from `lambda-submit-lead.mjs`**
+2. **In Lambda console:**
+   - Click on the file name (probably `index.mjs`)
+   - Paste the code into the editor
+3. **Verify Handler**: Should be `index.handler`
+4. **Click "Deploy"**
 
-### Environment Variables (Optional)
-If you want to make the CRM URLs configurable:
-- `CRM_BASE_URL`: `dmi-uat.crm15.dynamics.com`
-- `TOKEN_ENDPOINT`: `/api/data/v9.2/titc_GetAccessToken`
-- `CREATE_LEAD_ENDPOINT`: `/api/data/v9.2/titc_CreateClassifiedB2BLead`
+**Alternative: If you prefer CommonJS (`.js` files):**
+1. Rename your Lambda file from `index.mjs` to `index.js`
+2. Copy code from `lambda-submit-lead-commonjs.js`
+3. Handler: `index.handler`
+4. Deploy
+
+## Step 3: Configure Lambda Environment Variables
+
+**Required Environment Variables:**
+
+1. Go to Lambda Console → Your function → Configuration → Environment variables
+2. Click "Edit"
+3. Add these variables:
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `AZURE_TENANT_ID` | `your-tenant-id-here` | Azure AD Tenant ID (get from Azure Portal) |
+| `AZURE_CLIENT_ID` | `your-client-id-here` | Azure AD Application (Client) ID (get from Azure Portal) |
+| `AZURE_CLIENT_SECRET` | `your-client-secret-here` | Azure AD Client Secret (get from Azure Portal) |
+
+**Optional Environment Variables:**
+
+| Key | Value | Description |
+|-----|-------|-------------|
+| `CRM_BASE_URL` | `dmi-uat.crm15.dynamics.com` | Dynamics CRM base URL (default) |
+| `CREATE_LEAD_ENDPOINT` | `/api/data/v9.2/titc_CreateClassifiedB2BLead` | CRM API endpoint (default) |
+| `AZURE_SCOPE` | `https://dmi-uat.crm15.dynamics.com/.default` | OAuth scope (auto-generated if not set) |
+
+4. Click "Save"
+
+**Security Note:** These credentials are sensitive. In production, consider using AWS Secrets Manager or Parameter Store instead of environment variables.
 
 ### Timeout
 - Set timeout to **30 seconds** (Configuration → General configuration → Edit)
@@ -115,12 +144,95 @@ api: {
 }
 ```
 
-## Step 6: Test
+## Step 6: Test the Lambda Function
+
+### Test 1: Test Lambda Function Directly (Recommended First)
+
+1. **Go to AWS Lambda Console**
+2. **Open your function**: `dmi-signon-submit-lead`
+3. **Click "Test" tab**
+4. **Create a new test event:**
+   - Event name: `TestLeadSubmission`
+   - Template: `API Gateway HTTP API`
+   - Replace the JSON with:
+
+```json
+{
+  "version": "2.0",
+  "routeKey": "POST /submit-lead",
+  "rawPath": "/submit-lead",
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/submit-lead"
+    }
+  },
+  "headers": {
+    "content-type": "application/json",
+    "authorization": "Bearer test-token"
+  },
+  "body": "{\"LeadFirstName\":\"John\",\"LeadLastName\":\"Doe\",\"LeadEmail\":\"john.doe@example.com\",\"LeadMobile\":\"+1234567890\",\"LeadPublicationName\":\"Test Publication\",\"LeadDescription\":\"Test lead description\",\"LeadCountry\":\"United Arab Emirates\",\"LeadAddress\":\"Test Address\"}",
+  "isBase64Encoded": false
+}
+```
+
+5. **Click "Test"**
+6. **Check the response:**
+   - ✅ Success: Status 200, response shows success message
+   - ❌ Error: Check the error message and logs
+
+### Test 2: Test via API Gateway URL
+
+Use curl or Postman to test the API Gateway endpoint:
+
+```bash
+curl -X POST https://YOUR-API-URL/submit-lead \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer test-token" \
+  -d '{
+    "LeadFirstName": "John",
+    "LeadLastName": "Doe",
+    "LeadEmail": "john.doe@example.com",
+    "LeadMobile": "+1234567890",
+    "LeadPublicationName": "Test Publication",
+    "LeadDescription": "Test lead description",
+    "LeadCountry": "United Arab Emirates",
+    "LeadAddress": "Test Address"
+  }'
+```
+
+**Expected Response:**
+```json
+{
+  "success": true,
+  "message": "Lead submitted successfully",
+  "data": { ... }
+}
+```
+
+### Test 3: Check CloudWatch Logs
+
+1. **Go to CloudWatch Console**
+2. **Click "Log groups"**
+3. **Find**: `/aws/lambda/dmi-signon-submit-lead`
+4. **Click on the latest log stream**
+5. **Review logs** for any errors
+
+Common log messages:
+- ✅ "Getting CRM access token..." - Token request started
+- ✅ "Access token received" - Token obtained successfully
+- ✅ "Submitting lead to CRM..." - Lead submission started
+- ✅ "Lead submitted successfully" - All good!
+- ❌ "Token request failed" - CRM token endpoint issue
+- ❌ "CRM request failed" - CRM lead creation issue
+
+### Test 4: Test from Frontend
 
 1. Deploy to Apache: `.\deploy.ps1`
 2. Test locally: `http://localhost/dmi-signon/index.html`
 3. Sign in and submit the form
-4. Check CloudWatch Logs in AWS Lambda console for any errors
+4. Check browser console (F12) for detailed logs
+5. Check CloudWatch Logs for Lambda execution logs
 
 ## How to Create Stage and Deploy (If Needed)
 

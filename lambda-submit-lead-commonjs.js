@@ -1,6 +1,9 @@
 /**
- * AWS Lambda Function: Submit Lead to Dynamics 365 CRM
+ * AWS Lambda Function: Submit Lead to Dynamics 365 CRM (CommonJS Version)
  * This function acts as a proxy between the frontend and Dynamics CRM
+ * 
+ * Runtime: Node.js 18.x or later
+ * Handler: index.handler
  */
 
 const https = require('https');
@@ -22,7 +25,7 @@ exports.handler = async (event) => {
     };
     
     // Handle preflight OPTIONS request
-    if (event.httpMethod === 'OPTIONS') {
+    if (event.httpMethod === 'OPTIONS' || event.requestContext?.http?.method === 'OPTIONS') {
         return {
             statusCode: 200,
             headers: headers,
@@ -31,7 +34,7 @@ exports.handler = async (event) => {
     }
     
     // Verify JWT token from Cognito (optional but recommended)
-    const authHeader = event.headers.Authorization || event.headers.authorization;
+    const authHeader = event.headers?.Authorization || event.headers?.authorization;
     if (!authHeader) {
         return {
             statusCode: 401,

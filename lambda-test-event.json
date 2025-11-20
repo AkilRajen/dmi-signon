@@ -1,0 +1,23 @@
+{
+  "version": "2.0",
+  "routeKey": "POST /submit-lead",
+  "rawPath": "/submit-lead",
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/submit-lead",
+      "protocol": "HTTP/1.1",
+      "sourceIp": "127.0.0.1"
+    },
+    "requestId": "test-request-id",
+    "stage": "$default",
+    "time": "01/Jan/2024:00:00:00 +0000",
+    "timeEpoch": 1704067200000
+  },
+  "headers": {
+    "content-type": "application/json",
+    "authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ0ZXN0LXVzZXIiLCJlbWFpbCI6InRlc3RAZXhhbXBsZS5jb20ifQ.test"
+  },
+  "body": "{\"LeadFirstName\":\"John\",\"LeadLastName\":\"Doe\",\"LeadEmail\":\"john.doe@example.com\",\"LeadMobile\":\"+971501234567\",\"LeadPublicationName\":\"Gulf News\",\"LeadDescription\":\"Looking to post a classified ad for selling my car. Toyota Camry 2020 model in excellent condition.\",\"LeadCountry\":\"United Arab Emirates\",\"LeadAddress\":\"Dubai Marina, Dubai\",\"userId\":\"cognito-user-123\",\"userEmail\":\"john.doe@example.com\"}",
+  "isBase64Encoded": false
+}
