@@ -1,5 +1,10 @@
 // AWS Cognito Configuration
 // Replace these values with your actual AWS Cognito settings
+
+// Debug: Log current location
+console.log('Current location:', window.location.href);
+console.log('Origin:', window.location.origin);
+
 const CONFIG = {
     cognito: {
         region: 'us-east-1',
