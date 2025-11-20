@@ -12,8 +12,10 @@ const CONFIG = {
         clientId: '26uhgsh1bjf8bvjo2r5nuvksu1',
         domain: 'us-east-1k90mwxxsl.auth.us-east-1.amazoncognito.com',
         // Use exact URL that matches your Cognito App Client configuration
-        // Automatically detect environment
-        redirectUri: window.location.origin + '/dmi-signon/',
+        // Automatically detect environment (localhost uses /dmi-signon/, Vercel uses root)
+        redirectUri: window.location.hostname === 'localhost' 
+            ? window.location.origin + '/dmi-signon/'
+            : window.location.origin + '/',
         responseType: 'code',
         scope: 'openid email profile'
     },
