@@ -101,20 +101,20 @@ $(document).ready(function() {
         */
     }
     
-    // Default form fields (fallback)
+    // Default form fields (using CRM field names)
     function getDefaultFields() {
         return [
-            { name: 'firstName', label: 'First Name', type: 'text', required: true, maxLength: 100 },
-            { name: 'lastName', label: 'Last Name', type: 'text', required: true, maxLength: 100 },
-            { name: 'email', label: 'Email', type: 'email', required: true },
-            { name: 'phone', label: 'Phone Number', type: 'tel', required: true },
-            { name: 'publication', label: 'Publication', type: 'text', required: true, maxLength: 200 },
-            { name: 'description', label: 'Description', type: 'textarea', required: true, maxLength: 1000 },
-            { name: 'country', label: 'Country', type: 'select', required: false, default: 'United Arab Emirates',
+            { name: 'LeadFirstName', label: 'First Name', type: 'text', required: true, maxLength: 100 },
+            { name: 'LeadLastName', label: 'Last Name', type: 'text', required: true, maxLength: 100 },
+            { name: 'LeadEmail', label: 'Email', type: 'email', required: true },
+            { name: 'LeadMobile', label: 'Phone Number', type: 'tel', required: true },
+            { name: 'LeadPublicationName', label: 'Publication', type: 'text', required: true, maxLength: 200 },
+            { name: 'LeadDescription', label: 'Description', type: 'textarea', required: true, maxLength: 1000 },
+            { name: 'LeadCountry', label: 'Country', type: 'select', required: false, default: 'United Arab Emirates',
               options: ['United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 
                        'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
                        'India', 'China', 'Japan', 'Brazil', 'Mexico', 'South Africa', 'Other'] },
-            { name: 'address', label: 'Address', type: 'textarea', required: false, maxLength: 500 }
+            { name: 'LeadAddress', label: 'Address', type: 'textarea', required: false, maxLength: 500 }
         ];
     }
     

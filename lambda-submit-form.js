@@ -28,13 +28,15 @@ exports.handler = async (event) => {
         
         // TODO: Integrate with your CRM API to submit the form
         // Example:
-        // const crmResponse = await axios.post('https://your-crm-api.com/ads', {
-        //     title: formData.title,
-        //     category: formData.category,
-        //     description: formData.description,
-        //     price: formData.price,
-        //     location: formData.location,
-        //     contact: formData.contact,
+        // const crmResponse = await axios.post('https://your-crm-api.com/leads', {
+        //     LeadFirstName: formData.LeadFirstName,
+        //     LeadLastName: formData.LeadLastName,
+        //     LeadEmail: formData.LeadEmail,
+        //     LeadMobile: formData.LeadMobile,
+        //     LeadPublicationName: formData.LeadPublicationName,
+        //     LeadDescription: formData.LeadDescription,
+        //     LeadCountry: formData.LeadCountry,
+        //     LeadAddress: formData.LeadAddress,
         //     userId: formData.userId,
         //     userEmail: formData.userEmail
         // });

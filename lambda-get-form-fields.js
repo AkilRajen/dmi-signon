@@ -28,14 +28,17 @@ exports.handler = async (event) => {
         // Mock response - replace with actual CRM integration
         const formFields = {
             fields: [
-                { name: 'title', label: 'Ad Title', type: 'text', required: true },
-                { name: 'category', label: 'Category', type: 'select', required: true,
-                  options: ['Electronics', 'Furniture', 'Vehicles', 'Real Estate', 'Services'] },
-                { name: 'description', label: 'Description', type: 'textarea', required: true },
-                { name: 'price', label: 'Price', type: 'number', required: true },
-                { name: 'location', label: 'Location', type: 'text', required: true },
-                { name: 'contact', label: 'Contact Number', type: 'tel', required: true },
-                { name: 'email', label: 'Email', type: 'email', required: true }
+                { name: 'LeadFirstName', label: 'First Name', type: 'text', required: true, maxLength: 100 },
+                { name: 'LeadLastName', label: 'Last Name', type: 'text', required: true, maxLength: 100 },
+                { name: 'LeadEmail', label: 'Email', type: 'email', required: true },
+                { name: 'LeadMobile', label: 'Phone Number', type: 'tel', required: true },
+                { name: 'LeadPublicationName', label: 'Publication', type: 'text', required: true, maxLength: 200 },
+                { name: 'LeadDescription', label: 'Description', type: 'textarea', required: true, maxLength: 1000 },
+                { name: 'LeadCountry', label: 'Country', type: 'select', required: false, default: 'United Arab Emirates',
+                  options: ['United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 
+                           'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
+                           'India', 'China', 'Japan', 'Brazil', 'Mexico', 'South Africa', 'Other'] },
+                { name: 'LeadAddress', label: 'Address', type: 'textarea', required: false, maxLength: 500 }
             ]
         };
         
