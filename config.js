@@ -4,6 +4,7 @@
 // Debug: Log current location
 console.log('Current location:', window.location.href);
 console.log('Origin:', window.location.origin);
+console.log('Hostname:', window.location.hostname);
 
 const CONFIG = {
     cognito: {
@@ -13,9 +14,13 @@ const CONFIG = {
         domain: 'us-east-1k90mwxxsl.auth.us-east-1.amazoncognito.com',
         // Use exact URL that matches your Cognito App Client configuration
         // Automatically detect environment (localhost uses /dmi-signon/, Vercel uses root)
-        redirectUri: window.location.hostname === 'localhost' 
-            ? window.location.origin + '/dmi-signon/'
-            : window.location.origin + '/',
+        redirectUri: (function() {
+            const uri = window.location.hostname === 'localhost' 
+                ? window.location.origin + '/dmi-signon/'
+                : window.location.origin + '/';
+            console.log('Redirect URI set to:', uri);
+            return uri;
+        })(),
         responseType: 'code',
         scope: 'openid email profile'
     },
