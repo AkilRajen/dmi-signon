@@ -32,32 +32,76 @@ If you want to make the CRM URLs configurable:
 ### Memory
 - Set memory to **256 MB** (should be sufficient)
 
-## Step 4: Create API Gateway
+## Step 4: Create API Gateway (HTTP API - Recommended)
 
-1. **Go to API Gateway Console**
+### Page 1: Integrations and API Name
+
+1. **Go to AWS Console** → Search for "API Gateway"
 2. **Click "Create API"**
-3. **Choose "HTTP API"** (simpler and cheaper than REST API)
-4. **Configure:**
-   - API name: `dmi-signon-api`
-   - Click "Add integration" → Lambda
-   - Select your Lambda function: `dmi-signon-submit-lead`
-   - Click "Next"
+3. **Choose "HTTP API"** → Click "Build"
+4. **Add integrations:**
+   - Click "Add integration"
+   - Select "Lambda"
+   - Choose AWS Region: `us-east-1` (or your region)
+   - Lambda function: Select `dmi-signon-submit-lead`
+   - Version: `2.0` (default)
+5. **API name:** Enter `dmi-signon-api`
+6. **Click "Next"**
 
-5. **Configure routes:**
-   - Method: `POST`
-   - Resource path: `/submit-lead`
-   - Integration target: Your Lambda function
-   - Click "Next"
+### Page 2: Configure Routes
+
+1. **Method:** `POST` (should be auto-selected)
+2. **Resource path:** Enter `/submit-lead`
+3. **Integration target:** Should show your Lambda function
+4. **Click "Next"**
 
 6. **Configure CORS:**
-   - Access-Control-Allow-Origin: `*` (or specific domains)
-   - Access-Control-Allow-Headers: `content-type,authorization`
-   - Access-Control-Allow-Methods: `POST,OPTIONS`
+   
+   On the "Configure CORS" page in API Gateway:
+   
+   - **Access-Control-Allow-Origin**: Enter `*` (allows all domains) or specific domains like:
+     ```
+     http://localhost,https://dmi-signon.vercel.app
+     ```
+   
+   - **Access-Control-Allow-Headers**: Enter:
+     ```
+     content-type,authorization
+     ```
+   
+   - **Access-Control-Allow-Methods**: Check these boxes:
+     - ☑ POST
+     - ☑ OPTIONS
+   
    - Click "Next"
+   
+   **Note:** If you don't see the CORS configuration page during creation, you can configure it later:
+   - Go to your API in API Gateway Console
+   - Click "CORS" in the left menu
+   - Configure the settings there
 
-7. **Review and Create**
+### Page 3: Define Stages
 
-8. **Copy the Invoke URL** (e.g., `https://abc123.execute-api.us-east-1.amazonaws.com`)
+1. **Stage name:** `$default` (auto-configured)
+2. **Auto-deploy:** ☑ Enabled (recommended)
+3. **Click "Next"**
+
+### Page 4: Review and Create
+
+1. **Review all settings**
+2. **Click "Create"**
+
+### Get Your API URL
+
+After creation, you'll see:
+- **Invoke URL**: `https://abc123xyz.execute-api.us-east-1.amazonaws.com`
+
+Your full endpoint will be:
+```
+https://abc123xyz.execute-api.us-east-1.amazonaws.com/submit-lead
+```
+
+**Copy this URL** - you'll need it for the frontend configuration!
 
 ## Step 5: Update Frontend Configuration
 
@@ -116,8 +160,30 @@ If you need more control (API keys, usage plans, etc.):
 ## Troubleshooting
 
 ### CORS Errors
-- Ensure CORS is enabled in API Gateway
-- Check that Lambda returns proper CORS headers
+
+If you get CORS errors in the browser console:
+
+**Option 1: Configure CORS in API Gateway Console**
+1. Go to API Gateway Console
+2. Select your API: `dmi-signon-api`
+3. Click "CORS" in the left sidebar
+4. Click "Configure"
+5. Set:
+   - **Access-Control-Allow-Origin**: `*` or your specific domains
+   - **Access-Control-Allow-Headers**: `content-type,authorization`
+   - **Access-Control-Allow-Methods**: Select `POST` and `OPTIONS`
+6. Click "Save"
+
+**Option 2: Verify Lambda CORS Headers**
+The Lambda function already includes CORS headers in the response. Make sure they match your frontend domain.
+
+**Option 3: Test CORS**
+Use browser console to test:
+```javascript
+fetch('https://YOUR-API-URL/submit-lead', {
+  method: 'OPTIONS'
+}).then(r => console.log(r.headers))
+```
 
 ### 401 Unauthorized
 - Verify Cognito JWT token is being sent
