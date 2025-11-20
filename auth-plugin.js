@@ -18,6 +18,8 @@ class CognitoAuthPlugin {
 
     // Build Cognito Hosted UI URL for social login
     getLoginUrl(identityProvider) {
+        console.log('Building login URL with redirect_uri:', this.config.redirectUri);
+        
         const params = new URLSearchParams({
             client_id: this.config.clientId,
             response_type: this.config.responseType,
@@ -30,7 +32,10 @@ class CognitoAuthPlugin {
             params.append('identity_provider', identityProvider);
         }
         
-        return `https://${this.config.domain}/oauth2/authorize?${params.toString()}`;
+        const loginUrl = `https://${this.config.domain}/oauth2/authorize?${params.toString()}`;
+        console.log('Full login URL:', loginUrl);
+        
+        return loginUrl;
     }
 
     // Redirect to Cognito login page
@@ -119,13 +124,30 @@ class CognitoAuthPlugin {
         const idToken = sessionStorage.getItem('idToken');
         const accessToken = sessionStorage.getItem('accessToken');
         
+        // Validate token is not expired
         if (idToken && accessToken) {
-            this.idToken = idToken;
-            this.accessToken = accessToken;
-            this.parseUserInfo(idToken);
-            
-            if (this.onAuthSuccess) {
-                this.onAuthSuccess(this.currentUser);
+            try {
+                const payload = idToken.split('.')[1];
+                const decoded = JSON.parse(atob(payload));
+                const now = Math.floor(Date.now() / 1000);
+                
+                // Check if token is expired
+                if (decoded.exp && decoded.exp < now) {
+                    console.log('Token expired, clearing session');
+                    sessionStorage.clear();
+                    return;
+                }
+                
+                this.idToken = idToken;
+                this.accessToken = accessToken;
+                this.parseUserInfo(idToken);
+                
+                if (this.onAuthSuccess) {
+                    this.onAuthSuccess(this.currentUser);
+                }
+            } catch (error) {
+                console.error('Invalid token, clearing session:', error);
+                sessionStorage.clear();
             }
         }
     }
