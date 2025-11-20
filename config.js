@@ -18,8 +18,7 @@ const CONFIG = {
         scope: 'openid email profile'
     },
     api: {
-        // Lambda API Gateway endpoints
-        getFormFields: 'https://my-json-server.typicode.com/AkilRajen/mock-crm-api/form-fields',
-        submitForm: 'https://my-json-server.typicode.com/AkilRajen/mock-crm-api/submissions'
+        // Lambda API Gateway endpoint for form submission
+        submitForm: 'https://your-api-gateway.execute-api.us-east-1.amazonaws.com/prod/submit-lead'
     }
 };

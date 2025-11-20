@@ -69,53 +69,25 @@ $(document).ready(function() {
         loadFormFields();
     }
     
-    // Load form fields from CRM
-    function loadFormFields() {
-        const idToken = authPlugin.getIdToken();
-        console.log('ID Token:', idToken ? 'Present' : 'Missing');
-        
-        // For now, skip API call and use default fields directly
-        console.log('Getting default fields...');
-        const defaultFields = getDefaultFields();
-        console.log('Default fields:', defaultFields);
-        console.log('Calling renderFormFields...');
-        renderFormFields(defaultFields);
-        
-        /* Uncomment when Lambda API is ready
-        $.ajax({
-            url: CONFIG.api.getFormFields,
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${idToken}`
-            },
-            success: function(response) {
-                console.log('API response:', response);
-                renderFormFields(response.fields);
-            },
-            error: function(xhr, status, error) {
-                console.error('Failed to load form fields:', error);
-                // Fallback to default fields
-                renderFormFields(getDefaultFields());
-            }
-        });
-        */
-    }
+    // Form fields configuration (using CRM field names)
+    const FORM_FIELDS = [
+        { name: 'LeadFirstName', label: 'First Name', type: 'text', required: true, maxLength: 100 },
+        { name: 'LeadLastName', label: 'Last Name', type: 'text', required: true, maxLength: 100 },
+        { name: 'LeadEmail', label: 'Email', type: 'email', required: true },
+        { name: 'LeadMobile', label: 'Phone Number', type: 'tel', required: true },
+        { name: 'LeadPublicationName', label: 'Publication', type: 'text', required: true, maxLength: 200 },
+        { name: 'LeadDescription', label: 'Description', type: 'textarea', required: true, maxLength: 1000 },
+        { name: 'LeadCountry', label: 'Country', type: 'select', required: false, default: 'United Arab Emirates',
+          options: ['United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 
+                   'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
+                   'India', 'China', 'Japan', 'Brazil', 'Mexico', 'South Africa', 'Other'] },
+        { name: 'LeadAddress', label: 'Address', type: 'textarea', required: false, maxLength: 500 }
+    ];
     
-    // Default form fields (using CRM field names)
-    function getDefaultFields() {
-        return [
-            { name: 'LeadFirstName', label: 'First Name', type: 'text', required: true, maxLength: 100 },
-            { name: 'LeadLastName', label: 'Last Name', type: 'text', required: true, maxLength: 100 },
-            { name: 'LeadEmail', label: 'Email', type: 'email', required: true },
-            { name: 'LeadMobile', label: 'Phone Number', type: 'tel', required: true },
-            { name: 'LeadPublicationName', label: 'Publication', type: 'text', required: true, maxLength: 200 },
-            { name: 'LeadDescription', label: 'Description', type: 'textarea', required: true, maxLength: 1000 },
-            { name: 'LeadCountry', label: 'Country', type: 'select', required: false, default: 'United Arab Emirates',
-              options: ['United Arab Emirates', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman', 
-                       'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
-                       'India', 'China', 'Japan', 'Brazil', 'Mexico', 'South Africa', 'Other'] },
-            { name: 'LeadAddress', label: 'Address', type: 'textarea', required: false, maxLength: 500 }
-        ];
+    // Load form fields
+    function loadFormFields() {
+        console.log('Loading form fields...');
+        renderFormFields(FORM_FIELDS);
     }
     
     // Render form fields dynamically
