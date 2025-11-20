@@ -82,9 +82,11 @@ If you want to make the CRM URLs configurable:
 
 ### Page 3: Define Stages
 
-1. **Stage name:** `$default` (auto-configured)
+1. **Stage name:** `$default` (auto-configured for HTTP API)
 2. **Auto-deploy:** ☑ Enabled (recommended)
 3. **Click "Next"**
+
+**Note:** HTTP APIs use `$default` stage automatically. If you don't see this page, it's okay - HTTP APIs auto-deploy by default.
 
 ### Page 4: Review and Create
 
@@ -120,18 +122,153 @@ api: {
 3. Sign in and submit the form
 4. Check CloudWatch Logs in AWS Lambda console for any errors
 
+## How to Create Stage and Deploy (If Needed)
+
+### For HTTP API - Enable or Create Stage
+
+If `$default` stage is disabled or unavailable:
+
+**Option 1: Enable $default Stage (Recommended)**
+1. Go to API Gateway Console
+2. Select your HTTP API
+3. Click "Stages" in left menu
+4. Click "$default" stage
+5. Look for "Auto-deploy" toggle
+6. **Enable Auto-deploy** (turn it ON)
+7. Click "Save"
+
+**Important:** Once auto-deploy is enabled, your API is automatically deployed! You don't need to click "Deploy" manually. Any changes you make will auto-deploy immediately.
+
+**Option 2: Create a New Stage**
+1. Go to API Gateway Console
+2. Select your HTTP API
+3. Click "Stages" in left menu
+4. Click "Create" button
+5. **Stage name**: Enter `prod` (or any name you want)
+6. **Auto-deploy**: ☑ Enable
+7. Click "Create"
+
+**Option 3: Manual Deployment (Only if Auto-deploy is OFF)**
+1. Go to API Gateway Console
+2. Select your HTTP API
+3. Click "Develop" in left menu
+4. Click "Routes" 
+5. Click "Deploy" button at the top
+6. Select stage: `$default` or your custom stage
+7. Click "Deploy"
+
+**Note:** If auto-deploy is enabled, the "Deploy" button will be grayed out or unavailable. This is normal - your API is already deployed automatically!
+
+### Get Your API Invoke URL
+
+After enabling the stage:
+
+1. Go to API Gateway Console
+2. Select your HTTP API
+3. Click "Stages" in left menu
+4. Click your stage (`$default` or `prod`)
+5. **Copy the "Invoke URL"** shown at the top
+
+Your full endpoint URL will be:
+- With $default stage: `https://abc123.execute-api.us-east-1.amazonaws.com/submit-lead`
+- With custom stage (prod): `https://abc123.execute-api.us-east-1.amazonaws.com/prod/submit-lead`
+
+**Test your API:**
+```bash
+curl -X POST https://YOUR-API-URL/submit-lead \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR-TOKEN" \
+  -d '{"LeadFirstName":"Test","LeadLastName":"User","LeadEmail":"test@example.com"}'
+```
+
+### For REST API (Manual Deployment Required)
+
+If you created a REST API instead, you must manually deploy:
+
+1. In API Gateway Console, select your REST API
+2. Click "Actions" dropdown
+3. Select "Deploy API"
+4. **Deployment stage**: 
+   - Select "[New Stage]"
+   - **Stage name**: Enter `prod` (or `dev`, `test`, etc.)
+   - **Stage description**: Optional
+5. Click "Deploy"
+
+Your API URL will be:
+```
+https://abc123.execute-api.us-east-1.amazonaws.com/prod/submit-lead
+```
+
+**Note:** REST APIs require the stage name in the URL (`/prod/`), while HTTP APIs don't.
+
 ## Alternative: Using REST API (More Features)
 
-If you need more control (API keys, usage plans, etc.):
+If you need more control (API keys, usage plans, throttling):
 
-1. **Create REST API** instead of HTTP API
-2. **Create Resource**: `/submit-lead`
-3. **Create Method**: `POST`
-4. **Integration type**: Lambda Function
-5. **Enable CORS**: Actions → Enable CORS
-6. **Deploy API**: Actions → Deploy API
+### Step-by-Step REST API Creation
+
+1. **Create REST API**
+   - Go to API Gateway Console
+   - Click "Create API"
+   - Choose "REST API" → "Build"
+   - API name: `dmi-signon-api`
+   - Endpoint Type: "Regional"
+   - Click "Create API"
+
+2. **Create Resource**
+   - Click "Actions" → "Create Resource"
+   - Resource Name: `submit-lead`
+   - Resource Path: `/submit-lead`
+   - Enable CORS: ☑ (optional, can do later)
+   - Click "Create Resource"
+
+3. **Create POST Method**
+   - Select the `/submit-lead` resource
+   - Click "Actions" → "Create Method"
+   - Select "POST" from dropdown
+   - Click the checkmark ✓
+   
+4. **Configure POST Method**
+   - Integration type: "Lambda Function"
+   - Use Lambda Proxy integration: ☑ (important!)
+   - Lambda Region: Select your region
+   - Lambda Function: `dmi-signon-submit-lead`
+   - Click "Save"
+   - Click "OK" to give API Gateway permission
+
+5. **Enable CORS**
+   - Select the `/submit-lead` resource
+   - Click "Actions" → "Enable CORS"
+   - Keep default settings or customize:
+     - Access-Control-Allow-Headers: `Content-Type,Authorization`
+     - Access-Control-Allow-Methods: `POST,OPTIONS`
+   - Click "Enable CORS and replace existing CORS headers"
+   - Click "Yes, replace existing values"
+
+6. **Deploy API**
+   - Click "Actions" → "Deploy API"
+   - Deployment stage: "[New Stage]"
    - Stage name: `prod`
-7. **Copy Invoke URL**: `https://abc123.execute-api.us-east-1.amazonaws.com/prod/submit-lead`
+   - Click "Deploy"
+
+7. **Get Invoke URL**
+   - After deployment, you'll see the "Invoke URL"
+   - Copy it: `https://abc123.execute-api.us-east-1.amazonaws.com/prod`
+   - Your full endpoint: `https://abc123.execute-api.us-east-1.amazonaws.com/prod/submit-lead`
+
+### When to Use REST API vs HTTP API
+
+**Use HTTP API if:**
+- ✅ You want simpler setup
+- ✅ You want lower cost ($1/million vs $3.50/million)
+- ✅ You don't need API keys or usage plans
+- ✅ Basic authentication (JWT) is sufficient
+
+**Use REST API if:**
+- ✅ You need API keys
+- ✅ You need usage plans and throttling
+- ✅ You need request/response transformation
+- ✅ You need more detailed CloudWatch metrics
 
 ## Security Enhancements
 
