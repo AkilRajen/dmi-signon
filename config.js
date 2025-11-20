@@ -25,7 +25,8 @@ const CONFIG = {
         scope: 'openid email profile'
     },
     api: {
-        // Lambda API Gateway endpoint for form submission
-        submitForm: 'https://your-api-gateway.execute-api.us-east-1.amazonaws.com/prod/submit-lead'
+        // AWS Lambda API Gateway endpoint
+        // Replace with your actual API Gateway URL after deployment
+        submitLead: 'https://YOUR-API-ID.execute-api.us-east-1.amazonaws.com/submit-lead'
     }
 };

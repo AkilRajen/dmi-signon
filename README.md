@@ -1,13 +1,14 @@
-# Corporate Website SSO Integration Demo
+# Corporate Website SSO Integration with Dynamics 365 CRM
 
-A simple demo project showing AWS Cognito social identity authentication with form workflow.
+AWS Cognito social authentication integrated with Dynamics 365 CRM lead submission via Lambda.
 
 ## Features
 
-- **Standalone Auth Plugin**: Reusable authentication module that can be attached to any website
-- **AWS Cognito Social Login**: Supports Google, Facebook, Amazon, and other social providers
-- **Dynamic Form Loading**: Form fields retrieved from CRM via Lambda
-- **Form Submission**: Data submitted to CRM through Lambda API
+- **Social Authentication**: Google, Facebook, Apple, Microsoft via AWS Cognito
+- **Standalone Auth Plugin**: Reusable authentication module
+- **Lead Capture Form**: 8 fields mapped to Dynamics 365 CRM schema
+- **Lambda Integration**: Secure backend proxy to Dynamics 365 CRM
+- **Multi-Environment**: Works on localhost and Vercel
 
 ## Project Structure
 

@@ -178,10 +178,15 @@ $(document).ready(function() {
     
     // Submit form to CRM via Lambda
     function submitFormToCRM(formData) {
+        console.log('Submitting form to CRM via Lambda...', formData);
+        
+        // Show loading state
+        $('#ad-form button[type="submit"]').prop('disabled', true).text('Submitting...');
+        
         const idToken = authPlugin.getIdToken();
         
         $.ajax({
-            url: CONFIG.api.submitForm,
+            url: CONFIG.api.submitLead,
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${idToken}`,
@@ -189,13 +194,26 @@ $(document).ready(function() {
             },
             data: JSON.stringify(formData),
             success: function(response) {
-                console.log('Form submitted successfully:', response);
+                console.log('Lead submitted successfully:', response);
                 $('#form-section').hide();
                 $('#success-section').show();
             },
             error: function(xhr, status, error) {
-                console.error('Form submission failed:', error);
-                alert('Failed to submit form. Please try again.');
+                console.error('Failed to submit lead:', error);
+                console.error('Status:', xhr.status);
+                console.error('Response:', xhr.responseText);
+                
+                $('#ad-form button[type="submit"]').prop('disabled', false).text('Submit');
+                
+                let errorMessage = 'Failed to submit form. Please try again.';
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    errorMessage += '\n\nError: ' + (errorData.error || errorData.message || xhr.responseText);
+                } catch (e) {
+                    errorMessage += '\n\nError: ' + (xhr.responseText || error);
+                }
+                
+                alert(errorMessage);
             }
         });
     }
