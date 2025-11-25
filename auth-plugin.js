@@ -58,6 +58,9 @@ class CognitoAuthPlugin {
     // Exchange authorization code for tokens
     async exchangeCodeForTokens(code) {
         try {
+            console.log('Exchanging code for tokens...');
+            console.log('Using redirect_uri:', this.config.redirectUri);
+            
             const params = new URLSearchParams({
                 grant_type: 'authorization_code',
                 client_id: this.config.clientId,
@@ -75,6 +78,7 @@ class CognitoAuthPlugin {
 
             if (response.ok) {
                 const tokens = await response.json();
+                console.log('✓ Tokens received successfully');
                 this.storeTokens(tokens);
                 this.parseUserInfo(tokens.id_token);
                 
@@ -84,6 +88,11 @@ class CognitoAuthPlugin {
                 if (this.onAuthSuccess) {
                     this.onAuthSuccess(this.currentUser);
                 }
+            } else {
+                const errorData = await response.json();
+                console.error('Token exchange failed with status:', response.status);
+                console.error('Error details:', errorData);
+                alert('Authentication failed: ' + (errorData.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('Token exchange failed:', error);
