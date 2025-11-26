@@ -12,7 +12,7 @@ const CONFIG = {
         userPoolId: 'us-east-1_1gtVWamfZ',
         clientId: 'ug4gs38a4d202146ld9i2vv32',
         // Use CloudFront distribution domain instead of direct Cognito domain
-        domain: 'sso.akilakamal.com',
+        domain: 'auth.akilakamal.com',
         // Redirect back to dev.akilakamal.com after authentication
         redirectUri: (function() {
             const uri = window.location.hostname === 'localhost' 

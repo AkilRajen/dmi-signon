@@ -80,20 +80,21 @@ $(document).ready(function() {
         $('#form-section').show();
         
         console.log('Loading form fields...');
-        // Load form fields from CRM via Lambda
-        loadFormFields();
+        // Load form fields and pre-fill with user data
+        loadFormFields(user);
     }
     
     
     // Load form fields
-    function loadFormFields() {
+    function loadFormFields(user) {
         console.log('Loading form fields...');
-        renderFormFields(FORM_FIELDS);
+        renderFormFields(FORM_FIELDS, user);
     }
     
     // Render form fields dynamically
-    function renderFormFields(fields) {
+    function renderFormFields(fields, user) {
         console.log('Rendering form fields, received:', fields);
+        console.log('User data for pre-fill:', user);
         
         if (!fields || !Array.isArray(fields)) {
             console.error('Invalid fields parameter:', fields);
@@ -110,36 +111,59 @@ $(document).ready(function() {
         
         formFieldsContainer.empty();
         
+        // Parse user name into first and last name
+        let firstName = '';
+        let lastName = '';
+        if (user && user.name) {
+            const nameParts = user.name.split(' ');
+            firstName = nameParts[0] || '';
+            lastName = nameParts.slice(1).join(' ') || '';
+        }
+        
         fields.forEach(function(field) {
             const formGroup = $('<div class="form-group"></div>');
             const label = $(`<label for="${field.name}">${field.label}${field.required ? ' *' : ''}</label>`);
             formGroup.append(label);
             
             let input;
+            let prefilledValue = field.default || '';
+            
+            // Pre-fill with user data if available
+            if (user) {
+                if (field.name === 'LeadFirstName') {
+                    prefilledValue = firstName;
+                } else if (field.name === 'LeadLastName') {
+                    prefilledValue = lastName;
+                } else if (field.name === 'LeadEmail') {
+                    prefilledValue = user.email || '';
+                }
+            }
+            
             if (field.type === 'textarea') {
                 input = $(`<textarea id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''} ${field.maxLength ? 'maxlength="' + field.maxLength + '"' : ''}></textarea>`);
-                if (field.default) {
-                    input.val(field.default);
-                }
+                input.val(prefilledValue);
             } else if (field.type === 'select') {
                 input = $(`<select id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''}></select>`);
                 input.append('<option value="">Select...</option>');
                 field.options.forEach(function(option) {
-                    const selected = field.default && option === field.default ? 'selected' : '';
+                    const selected = prefilledValue && option === prefilledValue ? 'selected' : '';
                     input.append(`<option value="${option}" ${selected}>${option}</option>`);
                 });
             } else {
                 input = $(`<input type="${field.type}" id="${field.name}" name="${field.name}" ${field.required ? 'required' : ''} ${field.maxLength ? 'maxlength="' + field.maxLength + '"' : ''}>`);
-                if (field.default) {
-                    input.val(field.default);
-                }
+                input.val(prefilledValue);
             }
             
             // Add character counter for fields with maxLength
             if (field.maxLength && (field.type === 'text' || field.type === 'textarea')) {
-                const counter = $(`<div class="char-counter"><span class="char-count">0</span> / ${field.maxLength}</span></div>`);
+                const counter = $(`<div class="char-counter"><span class="char-count">${prefilledValue.length}</span> / ${field.maxLength}</span></div>`);
                 formGroup.append(input);
                 formGroup.append(counter);
+                
+                // Update counter color if pre-filled value is at limit
+                if (prefilledValue.length >= field.maxLength) {
+                    formGroup.find('.char-counter').addClass('limit-reached');
+                }
                 
                 input.on('input', function() {
                     const length = $(this).val().length;
@@ -157,7 +181,7 @@ $(document).ready(function() {
             formFieldsContainer.append(formGroup);
         });
         
-        console.log('Form fields rendered successfully');
+        console.log('Form fields rendered successfully with user data pre-filled');
     }
     
     // Handle form submission
