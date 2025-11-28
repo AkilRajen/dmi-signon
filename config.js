@@ -8,16 +8,16 @@ console.log('Hostname:', window.location.hostname);
 
 const CONFIG = {
     cognito: {
-        region: 'me-central-1',
-        userPoolId: 'me-central-1_12eiiqudq',
-        clientId: '7elmfckj8l45ohqp2r09kbenj5',
+        region: 'us-east-1',
+        userPoolId: 'us-east-1_1gtVWamfZ',
+        clientId: 'ug4gs38a4d202146ld9i2vv32',
         // Use CloudFront distribution domain instead of direct Cognito domain
-        domain: 'me-central-112eiiqudq.auth.me-central-1.amazoncognito.com',
+        domain: 'sso.akilakamal.com',
         // Redirect back to sso.dmi.ae after authentication
         redirectUri: (function() {
             const uri = window.location.hostname === 'localhost' 
                 ? window.location.origin + '/dmi-signon'
-                : 'https://assets.dmi.ae';
+                : 'https://sso.akilakamal.com';
             console.log('Redirect URI set to:', uri);
             return uri;
         })(),
